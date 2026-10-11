@@ -8,4 +8,11 @@ terraform {
       name = "cr460-devoir1"
     }
   }
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
+  }
 }
