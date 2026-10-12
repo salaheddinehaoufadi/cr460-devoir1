@@ -102,7 +102,30 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 }
 
-# Point 10 : container Docker (Azure Container Instances)
+# Point 14 : Azure Container Registry
+resource "azurerm_container_registry" "acr" {
+  name                = var.acr_name
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  sku                 = "Basic"
+  admin_enabled       = true
+  tags                = var.tags
+}
+
+output "acr_login_server" {
+  value = azurerm_container_registry.acr.login_server
+}
+
+output "acr_admin_username" {
+  value = azurerm_container_registry.acr.admin_username
+}
+
+output "acr_admin_password" {
+  value     = azurerm_container_registry.acr.admin_password
+  sensitive = true
+}
+
+# Point 10 + 14 : container Docker avec l'image de l'ACR
 resource "azurerm_container_group" "aci" {
   name                = var.container_name
   location            = azurerm_resource_group.rg.location
@@ -112,9 +135,15 @@ resource "azurerm_container_group" "aci" {
   dns_name_label      = "cr460-salaheddine-app"
   tags                = var.tags
 
+  image_registry_credential {
+    server   = azurerm_container_registry.acr.login_server
+    username = azurerm_container_registry.acr.admin_username
+    password = azurerm_container_registry.acr.admin_password
+  }
+
   container {
     name   = "app"
-    image  = "mcr.microsoft.com/azuredocs/aci-helloworld:latest"
+    image  = "${azurerm_container_registry.acr.login_server}/${var.image_name}:latest"
     cpu    = "0.5"
     memory = "1.5"
 

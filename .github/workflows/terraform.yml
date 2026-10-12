@@ -28,5 +28,21 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -input=false
 
+      # Étape 1 : créer l'Azure Container Registry
+      - name: Creer l'ACR
+        run: terraform apply -auto-approve -input=false -target=azurerm_container_registry.acr
+
+      # Étape 2 : construire et pousser l'image Docker dans l'ACR
+      - name: Build et push de l'image Docker vers l'ACR
+        run: |
+          SERVER=$(terraform output -raw acr_login_server)
+          USER=$(terraform output -raw acr_admin_username)
+          PASS=$(terraform output -raw acr_admin_password)
+          echo "::add-mask::$PASS"
+          echo "$PASS" | docker login "$SERVER" -u "$USER" --password-stdin
+          docker build -t "$SERVER/cr460-app:latest" ./app
+          docker push "$SERVER/cr460-app:latest"
+
+      # Étape 3 : déployer le reste (dont le container avec l'image de l'ACR)
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false

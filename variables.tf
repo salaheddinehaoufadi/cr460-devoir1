@@ -68,3 +68,15 @@ variable "tags" {
     Projet = "DevoirCR460"
   }
 }
+
+variable "acr_name" {
+  description = "Nom de l'Azure Container Registry (lettres et chiffres uniquement, unique dans Azure)"
+  type        = string
+  default     = "acrcr460salaheddine"
+}
+
+variable "image_name" {
+  description = "Nom de l'image Docker dans l'ACR"
+  type        = string
+  default     = "cr460-app"
+}
