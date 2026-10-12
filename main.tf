@@ -1,19 +1,19 @@
 # Point 7 : groupe de ressources
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-cr460-devoir1"
-  location = "canadacentral"
+  name     = var.resource_group_name
+  location = var.location
 }
 
 # Point 8 : réseau virtuel
 resource "azurerm_virtual_network" "vnet" {
-  name                = "vnet-cr460-devoir1"
+  name                = var.vnet_name
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 }
 
 resource "azurerm_subnet" "subnet" {
-  name                 = "subnet-cr460"
+  name                 = var.subnet_name
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.1.0/24"]
@@ -31,7 +31,7 @@ resource "random_password" "vm" {
 }
 
 resource "azurerm_network_interface" "nic" {
-  name                = "nic-cr460-vm"
+  name                = var.nic_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -43,10 +43,10 @@ resource "azurerm_network_interface" "nic" {
 }
 
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                            = "vm-cr460"
+  name                            = var.vm_name
   resource_group_name             = azurerm_resource_group.rg.name
   location                        = azurerm_resource_group.rg.location
-  size                            = "Standard_B2pts_v2"
+  size                            = var.vm_size
   admin_username                  = "azureuser"
   admin_password                  = random_password.vm.result
   disable_password_authentication = false
@@ -67,7 +67,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
 # Point 10 : container Docker (Azure Container Instances)
 resource "azurerm_container_group" "aci" {
-  name                = "aci-cr460"
+  name                = var.container_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   os_type             = "Linux"
