@@ -1,7 +1,7 @@
 # Point 7 : groupe de ressources
 resource "azurerm_resource_group" "rg" {
   name     = "rg-cr460-devoir1"
-  location = "canadacentral"
+  location = "canadaeast"
 }
 # Point 8 : réseau virtuel
 resource "azurerm_virtual_network" "vnet" {
@@ -45,7 +45,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   name                            = "vm-cr460"
   resource_group_name             = azurerm_resource_group.rg.name
   location                        = azurerm_resource_group.rg.location
-  size                            = "Standard_B2ats_v2"
+  size                            = "Standard_B2s"
   admin_username                  = "azureuser"
   admin_password                  = random_password.vm.result
   disable_password_authentication = false
