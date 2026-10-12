@@ -59,3 +59,12 @@ variable "key_vault_name" {
   type        = string
   default     = "kv-cr460-salaheddine"
 }
+
+# Point 13 : tag de gestion des coûts
+variable "tags" {
+  description = "Tags appliqués à toutes les ressources"
+  type        = map(string)
+  default = {
+    Projet = "DevoirCR460"
+  }
+}

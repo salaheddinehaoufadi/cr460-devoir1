@@ -2,6 +2,7 @@
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
+  tags     = var.tags
 }
 
 # Point 8 : réseau virtuel
@@ -10,6 +11,7 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+  tags                = var.tags
 }
 
 resource "azurerm_subnet" "subnet" {
@@ -39,6 +41,7 @@ resource "azurerm_key_vault" "kv" {
   sku_name                   = "standard"
   soft_delete_retention_days = 7
   purge_protection_enabled   = false
+  tags                       = var.tags
 
   # Accès pour Terraform (identité managée)
   access_policy {
@@ -59,12 +62,14 @@ resource "azurerm_key_vault_secret" "vm_password" {
   name         = "vm-admin-password"
   value        = random_password.vm.result
   key_vault_id = azurerm_key_vault.kv.id
+  tags         = var.tags
 }
 
 resource "azurerm_network_interface" "nic" {
   name                = var.nic_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+  tags                = var.tags
 
   ip_configuration {
     name                          = "internal"
@@ -82,6 +87,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   admin_password                  = azurerm_key_vault_secret.vm_password.value
   disable_password_authentication = false
   network_interface_ids           = [azurerm_network_interface.nic.id]
+  tags                            = var.tags
 
   os_disk {
     caching              = "ReadWrite"
@@ -104,6 +110,7 @@ resource "azurerm_container_group" "aci" {
   os_type             = "Linux"
   ip_address_type     = "Public"
   dns_name_label      = "cr460-salaheddine-app"
+  tags                = var.tags
 
   container {
     name   = "app"
