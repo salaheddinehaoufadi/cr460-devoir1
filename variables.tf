@@ -47,3 +47,15 @@ variable "nic_name" {
   type        = string
   default     = "nic-cr460-vm"
 }
+
+variable "portal_user_object_id" {
+  description = "Object ID de mon compte, pour voir le secret dans le portail"
+  type        = string
+  default     = "8f6f30a1-ab1c-4089-866c-5cff0e5f8685"
+}
+
+variable "key_vault_name" {
+  description = "Nom du Key Vault (unique dans tout Azure)"
+  type        = string
+  default     = "kv-cr460-salaheddine"
+}

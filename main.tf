@@ -30,6 +30,37 @@ resource "random_password" "vm" {
   min_special      = 1
 }
 
+# Point 12 : Key Vault + secret du mot de passe de la VM
+resource "azurerm_key_vault" "kv" {
+  name                       = var.key_vault_name
+  location                   = azurerm_resource_group.rg.location
+  resource_group_name        = azurerm_resource_group.rg.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  soft_delete_retention_days = 7
+  purge_protection_enabled   = false
+
+  # Accès pour Terraform (identité managée)
+  access_policy {
+    tenant_id          = data.azurerm_client_config.current.tenant_id
+    object_id          = data.azurerm_client_config.current.object_id
+    secret_permissions = ["Get", "List", "Set", "Delete", "Purge", "Recover"]
+  }
+
+  # Accès en lecture pour mon compte (captures dans le portail)
+  access_policy {
+    tenant_id          = data.azurerm_client_config.current.tenant_id
+    object_id          = var.portal_user_object_id
+    secret_permissions = ["Get", "List"]
+  }
+}
+
+resource "azurerm_key_vault_secret" "vm_password" {
+  name         = "vm-admin-password"
+  value        = random_password.vm.result
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
 resource "azurerm_network_interface" "nic" {
   name                = var.nic_name
   location            = azurerm_resource_group.rg.location
@@ -48,7 +79,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   location                        = azurerm_resource_group.rg.location
   size                            = var.vm_size
   admin_username                  = "azureuser"
-  admin_password                  = random_password.vm.result
+  admin_password                  = azurerm_key_vault_secret.vm_password.value
   disable_password_authentication = false
   network_interface_ids           = [azurerm_network_interface.nic.id]
 
@@ -89,4 +120,8 @@ resource "azurerm_container_group" "aci" {
 
 output "container_url" {
   value = "http://${azurerm_container_group.aci.fqdn}"
+}
+
+output "key_vault_secret_id" {
+  value = azurerm_key_vault_secret.vm_password.versionless_id
 }
