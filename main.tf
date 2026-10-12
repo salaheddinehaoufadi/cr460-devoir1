@@ -64,3 +64,29 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 }
+
+# Point 10 : container Docker (Azure Container Instances)
+resource "azurerm_container_group" "aci" {
+  name                = "aci-cr460"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  os_type             = "Linux"
+  ip_address_type     = "Public"
+  dns_name_label      = "cr460-salaheddine-app"
+
+  container {
+    name   = "app"
+    image  = "mcr.microsoft.com/azuredocs/aci-helloworld:latest"
+    cpu    = "0.5"
+    memory = "1.5"
+
+    ports {
+      port     = 80
+      protocol = "TCP"
+    }
+  }
+}
+
+output "container_url" {
+  value = "http://${azurerm_container_group.aci.fqdn}"
+}
